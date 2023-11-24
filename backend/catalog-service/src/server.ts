@@ -1,40 +1,67 @@
-import express, { Request, Response } from 'express';
+import axios from 'axios';
+import dotenv from 'dotenv';
 import http from 'http';
+import { AddressInfo } from 'net';
+
+import app from './app';
+import connectToMongoose from './utils/mongooseConnection';
+import trace from './utils/tracing';
 import config from '../config';
 
-const app = () => {
-  const app = express();
-  app.use((_: Request, res: Response, next) => {
-    res.header(
-      'Access-Control-Allow-Headers',
-      'Origin, X-Requested-With, Content-Type, Accept, Credentials, Set-Cookie'
-    );
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Accept, Access-Control-Allow-Credentials, Cross-Origin'
-    );
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    next();
-  });
-  app.use(express.json());
-  // Routes
-  app.get('/health', (_, res) => res.status(200).send({ success: true }));
-  // All non-specified routes return 404
-  app.get('*', (_, res) => res.status(404).send('Not Found'));
+dotenv.config();
 
-  const server = http.createServer(app);
-  server.on('listening', () => {
-    const addr = server.address();
-    const bind =
-      typeof addr === 'string' ? `pipe ${addr}` : `port ${addr?.port}`;
+trace(`${config.serviceName}:${config.serviceVersion}`);
 
-    console.info(
-      `${config.serviceName}:${config.serviceVersion} listening on ${bind}`
-    );
-  });
+const server = http.createServer(app);
 
-  return server;
+const register = async (port: number) =>
+  axios
+    .put(
+      `${process.env.REGISTER_SERVICE_API_URL}/${config.serviceName}/${config.serviceVersion}/${port}`
+    )
+    .catch((error) => console.error(error));
+
+const unregister = async (port: number) =>
+  axios
+    .delete(
+      `${process.env.REGISTER_SERVICE_API_URL}/${config.serviceName}/${config.serviceVersion}/${port}`
+    )
+    .catch((error) => console.error(error));
+
+const cleanup = async (interval: NodeJS.Timeout, port: number) => {
+  clearInterval(interval);
+  await unregister(port);
 };
 
-export default app;
+server.on('listening', () => {
+  const address = server.address() as AddressInfo;
+  const bind =
+    typeof address === 'string' ? `pipe ${address}` : `port ${address?.port}`;
+
+  register(address?.port);
+  const interval = setInterval(() => register(address?.port), 10000);
+
+  process.on('uncaughtException', async (error) => {
+    console.error(error);
+    await cleanup(interval, address?.port);
+    process.exit(1);
+  });
+
+  process.on('SIGTERM', async () => {
+    await cleanup(interval, address?.port);
+    process.exit(0);
+  });
+
+  process.on('SIGINT', async () => {
+    await cleanup(interval, address?.port);
+    process.exit(0);
+  });
+
+  console.info(
+    `${config.serviceName}:${config.serviceVersion} listening on ${bind}`
+  );
+});
+
+connectToMongoose(config.mongodb.url).then(() => {
+  server.listen(0);
+});
