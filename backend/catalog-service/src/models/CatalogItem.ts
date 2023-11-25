@@ -1,6 +1,17 @@
-import mongoose from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-const CatalogItemSchema = new mongoose.Schema(
+export type CatalogItem = {
+  createdAt: NativeDate;
+  updatedAt: NativeDate;
+} & {
+  sku: number;
+  name: string;
+  price: number;
+} & {
+  id?: string | undefined;
+};
+
+const CatalogItemSchema = new Schema<CatalogItem>(
   {
     sku: { type: Number, required: true, index: { unique: true } },
     name: { type: String, required: true },
@@ -11,8 +22,4 @@ const CatalogItemSchema = new mongoose.Schema(
   }
 );
 
-export type CatalogItem = mongoose.InferSchemaType<typeof CatalogItemSchema> & {
-  id?: string;
-};
-
-export default mongoose.model('Item', CatalogItemSchema);
+export default model<CatalogItem>('Item', CatalogItemSchema);
