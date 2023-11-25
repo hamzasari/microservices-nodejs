@@ -1,6 +1,6 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
-import http from 'http';
+import { createServer } from 'http';
 import { AddressInfo } from 'net';
 
 import app from './app';
@@ -31,7 +31,7 @@ const cleanup = async (interval: NodeJS.Timeout, port: number) => {
 
 trace(`${config.serviceName}:${config.serviceVersion}`);
 
-const server = http.createServer(app);
+const server = createServer(app);
 
 server.on('listening', () => {
   const address = server.address() as AddressInfo;
