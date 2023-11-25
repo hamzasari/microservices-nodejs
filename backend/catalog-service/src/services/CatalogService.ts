@@ -1,4 +1,5 @@
 import CatalogItemModel, { type CatalogItem } from '../models/CatalogItem';
+import { DeleteResult } from '../utils/commonTypes';
 
 /**
  * The function `getAll` retrieves all catalog items from the database and sorts
@@ -45,17 +46,14 @@ const update = async (
   return CatalogItemModel.findByIdAndUpdate(id, data, { new: true }).exec();
 };
 
-// TODO: Change return type from any to correct type
 /**
- * The `remove` function is an asynchronous function that deletes a catalog item
- * with the specified ID.
+ * The function `remove` deletes a catalog item with the specified ID.
  * @param {string} id - The `id` parameter is a string that represents the unique
  * identifier of the catalog item that needs to be removed.
- * @returns The `remove` function is returning a promise that resolves to the
- * result of the `deleteOne` operation on the `CatalogItemModel` with the specified
- * `_id`.
+ * @returns The `remove` function is returning a `Promise` that resolves to a
+ * `DeleteResult` object.
  */
-const remove = async (id: string): Promise<any> => {
+const remove = async (id: string): Promise<DeleteResult> => {
   return CatalogItemModel.deleteOne({ _id: id }).exec();
 };
 
