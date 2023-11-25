@@ -33,7 +33,7 @@ const errorHandler: ErrorRequestHandler = (err, _, res, __) => {
   const status = err.status ?? 500;
   const message = err.message ?? 'Internal Server Error';
 
-  console.error(err.stack);
+  console.error(err);
 
   res.status(status).json({
     error: {

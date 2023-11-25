@@ -30,8 +30,17 @@ app.use(morgan('tiny'));
 app.use('/', routes);
 // Error handling
 const errorHandler: ErrorRequestHandler = (err, _, res, __) => {
-  console.error(err.stack);
-  res.status(500).send('Internal Server Error');
+  const status = err.status ?? 500;
+  const message = err.message ?? 'Internal Server Error';
+
+  console.error(err);
+
+  res.status(status).json({
+    error: {
+      message,
+      status
+    }
+  });
 };
 app.use(errorHandler);
 
