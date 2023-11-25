@@ -1,18 +1,14 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
-import http from 'http';
+import { createServer } from 'http';
 import { AddressInfo } from 'net';
 
 import app from './app';
 import connectToMongoose from './utils/mongooseConnection';
 import trace from './utils/tracing';
-import config from '../config';
+import config from './config';
 
 dotenv.config();
-
-trace(`${config.serviceName}:${config.serviceVersion}`);
-
-const server = http.createServer(app);
 
 const register = async (port: number) =>
   axios
@@ -32,6 +28,10 @@ const cleanup = async (interval: NodeJS.Timeout, port: number) => {
   clearInterval(interval);
   await unregister(port);
 };
+
+trace(`${config.serviceName}:${config.serviceVersion}`);
+
+const server = createServer(app);
 
 server.on('listening', () => {
   const address = server.address() as AddressInfo;

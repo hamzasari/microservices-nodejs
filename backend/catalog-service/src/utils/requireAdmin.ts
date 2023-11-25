@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import { verify } from 'jsonwebtoken';
 
 const requireAdmin = (req: any, res: any, next: any) => {
   const { authorization } = req.headers;
@@ -7,10 +7,9 @@ const requireAdmin = (req: any, res: any, next: any) => {
   }
   console.log('authorization', process.env.JWT_SECRET);
   const token = authorization.split(' ')[1];
-  const decoded = jwt.verify(
-    token,
-    process.env.JWT_SECRET ?? 'DEFAULT SECRET'
-  ) as { isAdmin: boolean };
+  const decoded = verify(token, process.env.JWT_SECRET ?? 'DEFAULT SECRET') as {
+    isAdmin: boolean;
+  };
   console.log(decoded);
   if (!decoded.isAdmin) {
     return res.status(403).send('Forbidden');
