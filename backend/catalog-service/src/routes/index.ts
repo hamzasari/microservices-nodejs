@@ -66,11 +66,11 @@ router.put('/items/:id', requireAdmin, async (req, res) => {
 
 router.delete('/items/:id', requireAdmin, async (req, res) => {
   try {
-    const item = await remove(req.params.id);
-    if (!item) {
+    const deletionResult = await remove(req.params.id);
+    if (deletionResult.deletedCount === 0) {
       return res.status(404).send('Not Found');
     }
-    return res.json(createResponse(item));
+    return res.status(204).send();
   } catch (error) {
     console.error(error);
     return res.status(500).send('Internal Server Error');
