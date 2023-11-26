@@ -39,7 +39,10 @@ server.on('listening', () => {
     typeof address === 'string' ? `pipe ${address}` : `port ${address?.port}`;
 
   register(address?.port);
-  const interval = setInterval(() => register(address?.port), 10000);
+  const interval = setInterval(
+    () => register(address?.port),
+    config.heartbeatInterval * 1000
+  );
 
   process.on('uncaughtException', async (error) => {
     console.error(error);

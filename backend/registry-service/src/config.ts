@@ -6,8 +6,6 @@ dotenv.config();
 export default {
   serviceName: pkg.name,
   serviceVersion: pkg.version,
-  mongodb: {
-    url: `${process.env.MONGO_DB_URL}/${process.env.MONGO_DB_NAME}`
-  },
-  heartbeatInterval: Number(process.env.HEARTBEAT_INTERVAL) || 10
+  servicePort: process.env.PORT || 3080,
+  registeredServiceTimeout: Number(process.env.REGISTERED_SERVICE_TIMEOUT) || 15
 };

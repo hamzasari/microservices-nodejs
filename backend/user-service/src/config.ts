@@ -8,5 +8,6 @@ export default {
   serviceVersion: pkg.version,
   mongodb: {
     url: `${process.env.MONGO_DB_URL}/${process.env.MONGO_DB_NAME}`
-  }
+  },
+  heartbeatInterval: Number(process.env.HEARTBEAT_INTERVAL) || 10
 };
